@@ -23,8 +23,6 @@ type HTTPServer struct {
 	// Password    string        `yaml:"password" env-required:"true" env:"HTTP_SERVER_PASSWORD"`
 }
 
-// New reads the configuration from the command line flags,
-// environment variables and a configuration file (with priority).
 func NewConfig() (*Config, error) {
 
 	configPath := os.Getenv("CONFIG_PATH") //"./config/config.yml" // Если путь задать жестко, не работает отладка

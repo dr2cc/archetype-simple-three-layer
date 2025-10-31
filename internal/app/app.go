@@ -43,10 +43,10 @@ func Run(cfg *config.Config) { //nolint: gocyclo,cyclop,funlen,gocritic,nolintli
 	log.Debug("logger debug mode enabled")
 
 	// Repository🧹🏦
+	// ...
 
 	// Use-Case🧹🏦
-	// 19.10.2025 пока не могу тут ничего разместить
-	//
+	// ...
 
 	log.Info("starting server", slog.String("address", cfg.HTTPServer.Address))
 
