@@ -2,6 +2,7 @@ package app
 
 import (
 	"app/internal/config"
+	"app/internal/repository/pg"
 	"app/internal/usecase/logger/sl"
 	myLog "app/internal/usecase/middleware/logger"
 	"context"
@@ -38,12 +39,24 @@ const (
 func Run(cfg *config.Config) { //nolint: gocyclo,cyclop,funlen,gocritic,nolintlint
 	log := setupLogger(cfg.Env)
 	//log = log.With(slog.String("env", cfg.Env)) // к каждому сообщению будет добавляться поле с информацией о текущем окружении
-
 	log.Info("init server", slog.String("address", cfg.HTTPServer.Address)) // Помимо сообщения выведем параметр с адресом
 	log.Debug("logger debug mode enabled")
 
 	// Repository🧹🏦
-	// ...
+	//pg.InitDB(log, cfg)
+	db, err := pg.InitDB(log, cfg)
+	if err != nil {
+		log.Error("failed to connect storage")
+		os.Exit(1)
+	}
+	// создаем/проверяем наличие таблицы
+	errStorage := pg.New(log, db.DB)
+	if errStorage != nil {
+		log.Error("failed to init storage")
+		os.Exit(1)
+	}
+
+	// // ...
 
 	// Use-Case🧹🏦
 	// ...
