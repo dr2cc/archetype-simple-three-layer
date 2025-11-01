@@ -8,6 +8,9 @@ import (
 	"fmt"
 	"log/slog"
 	"time"
+
+	// Без такой конструкции не возможно подключится к postgres
+	_ "github.com/lib/pq"
 )
 
 type Postgres struct {
@@ -28,8 +31,7 @@ func InitDB(log *slog.Logger, cfg *config.Config) (*Postgres, error) {
 	// 1. Подключение к базе
 	db, err := sql.Open("postgres", cfg.DSN)
 	if err != nil {
-		log.Error("DB connection error")
-		//return nil
+		log.Error("DB connection error", sl.Err(err))
 		return nil, fmt.Errorf("connection error: %v", err)
 	}
 
@@ -48,8 +50,6 @@ func InitDB(log *slog.Logger, cfg *config.Config) (*Postgres, error) {
 
 	if err := db.PingContext(ctx); err != nil {
 		log.Error("error to ping", sl.Err(err))
-
-		//log.Error("error to ping db")
 		return nil, fmt.Errorf("error to ping db: %v", err)
 	}
 

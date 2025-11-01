@@ -2,18 +2,18 @@ package app
 
 import (
 	"app/internal/config"
+	v1 "app/internal/controller/http/v1"
 	"app/internal/repository/pg"
 	"app/internal/usecase/logger/sl"
-	myLog "app/internal/usecase/middleware/logger"
+	"app/pkg/httpserver"
+
 	"context"
 	"log/slog"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
 )
 
 const (
@@ -43,12 +43,13 @@ func Run(cfg *config.Config) { //nolint: gocyclo,cyclop,funlen,gocritic,nolintli
 	log.Debug("logger debug mode enabled")
 
 	// Repository🧹🏦
-	//pg.InitDB(log, cfg)
 	db, err := pg.InitDB(log, cfg)
 	if err != nil {
 		log.Error("failed to connect storage")
 		os.Exit(1)
 	}
+
+	// TODO: вынести? или оставить?
 	// создаем/проверяем наличие таблицы
 	errStorage := pg.New(log, db.DB)
 	if errStorage != nil {
@@ -56,46 +57,17 @@ func Run(cfg *config.Config) { //nolint: gocyclo,cyclop,funlen,gocritic,nolintli
 		os.Exit(1)
 	}
 
-	// // ...
-
 	// Use-Case🧹🏦
 	// ...
 
-	log.Info("starting server", slog.String("address", cfg.HTTPServer.Address))
-
-	// Waiting signal🧹🏦
-	// Логика Graceful Shutdown
-	done := make(chan os.Signal, 1)
-	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-
 	// HTTP Server🧹🏦
 	router := chi.NewRouter()
-	// Middleware встроенный в chi
-	router.Use(middleware.RequestID) // Трассировка. Добавляется request_id в каждый запрос
-	router.Use(middleware.Logger)    // Логирование всех запросов
-	// Если внутри произойдет паника, приложение не упадет.
-	// Recoverer это compress.Gzipper, которое восстанавливается после паники,
-	// регистрирует панику и выводит идентификатор запроса, если он указан.
-	router.Use(middleware.Recoverer)
-	router.Use(myLog.New(log))       // Меняю логгер на мой
-	router.Use(middleware.URLFormat) // Парсер URLов поступающих запросов. Удалит суффикс из пути маршрутизации и продолжит маршрутизацию
-	// Server startup parameters:
-	httpServer := &http.Server{
-		Addr:    cfg.HTTPServer.Address,
-		Handler: router,
-		//ReadTimeout:  cfg.HTTPServer.Timeout,
-		//WriteTimeout: cfg.HTTPServer.Timeout,
-		//IdleTimeout:  cfg.HTTPServer.IdleTimeout,
-	}
+	v1.RouterMiddleware(router, log)
+	httpServer := httpserver.New(cfg.HTTPServer.Address, router, log)
 
-	// Логика web-сервера
-	go func() {
-		if err := httpServer.ListenAndServe(); err != nil {
-			log.Error("failed to start server")
-		}
-	}()
-
-	log.Info("server started")
+	// Waiting signal🧹🏦
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	<-done
 	log.Info("stopping server")
@@ -107,7 +79,6 @@ func Run(cfg *config.Config) { //nolint: gocyclo,cyclop,funlen,gocritic,nolintli
 	// Shutdown🧹🏦
 	if err := httpServer.Shutdown(ctx); err != nil {
 		log.Error("failed to stop server", sl.Err(err))
-
 		return
 	}
 
