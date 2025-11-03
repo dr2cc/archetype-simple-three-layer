@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"app/internal/controller/ping"
 	myLog "app/internal/usecase/middleware/logger"
 	"log/slog"
 
@@ -18,4 +19,8 @@ func RouterMiddleware(router *chi.Mux, log *slog.Logger) {
 	router.Use(middleware.Recoverer)
 	router.Use(myLog.New(log))       // Меняю логгер на мой
 	router.Use(middleware.URLFormat) // Парсер URLов поступающих запросов. Удалит суффикс из пути маршрутизации и продолжит маршрутизацию
+
+	// handlers
+	router.Get("/healthDB", ping.HealthCheck(log))
+
 }
