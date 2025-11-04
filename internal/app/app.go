@@ -6,6 +6,7 @@ import (
 	"app/internal/repository/pg"
 	"app/internal/usecase/logger/sl"
 	"app/pkg/httpserver"
+	"net/http"
 
 	"context"
 	"log/slog"
@@ -35,7 +36,18 @@ const (
 
 // - 4️⃣ Запуск сервера: запустите HTTP-сервер, обычно с помощью http.ListenAndServe, и корректно обработайте возможные ошибки запуска.
 
-// Run creates objects via constructors.
+type App struct {
+	httpServer *http.Server
+	// UseCase!?
+	// Сущность по проверке на не пустое значение передаваемых
+	// для записи в db данных ?
+}
+
+func NewApp() *App {
+	return &App{}
+}
+
+// Run creates objects (via constructors!)
 func Run(cfg *config.Config) {
 	log := setupLogger(cfg.Env)
 	//log = log.With(slog.String("env", cfg.Env)) // к каждому сообщению будет добавляться поле с информацией о текущем окружении
