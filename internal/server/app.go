@@ -77,7 +77,7 @@ func (a *App) Run(cfg *config.Config) {
 	// HTTP Server🧹🏦
 	router := chi.NewRouter()
 	// middlewares & handlers
-	v1.RouterMiddleware(router, log)
+	v1.RouterMiddleware(router, log, cfg)
 	a.httpServer = httpserver.New(cfg.HTTPServer.Address, router, log)
 
 	// Waiting signal🧹🏦

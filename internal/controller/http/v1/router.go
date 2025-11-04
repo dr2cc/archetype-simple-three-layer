@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"app/internal/config"
 	"app/internal/controller/ping"
 	myLog "app/internal/usecase/middleware/logger"
 	"log/slog"
@@ -9,7 +10,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
-func RouterMiddleware(router *chi.Mux, log *slog.Logger) {
+func RouterMiddleware(router *chi.Mux, log *slog.Logger, cfg *config.Config) {
 	// Middleware встроенный в chi
 	router.Use(middleware.RequestID) // Трассировка. Добавляется request_id в каждый запрос
 	router.Use(middleware.Logger)    // Логирование всех запросов
@@ -21,6 +22,6 @@ func RouterMiddleware(router *chi.Mux, log *slog.Logger) {
 	router.Use(middleware.URLFormat) // Парсер URLов поступающих запросов. Удалит суффикс из пути маршрутизации и продолжит маршрутизацию
 
 	// handlers
-	router.Get("/healthDB", ping.HealthCheck(log))
+	router.Get("/healthDB", ping.HealthCheck(log, cfg))
 
 }

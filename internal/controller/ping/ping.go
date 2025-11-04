@@ -1,6 +1,7 @@
 package ping
 
 import (
+	"app/internal/config"
 	"database/sql"
 	"log/slog"
 	"net/http"
@@ -8,10 +9,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// TODO: Нужно получать значение dsn из the main service of the application- структура=служба со всеми основными сущностями нашего приложения
-// См. services.Shortener - сделать имено тут
-
-func HealthCheck(log *slog.Logger) http.HandlerFunc {
+func HealthCheck(log *slog.Logger, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		// if config.FlagDsn == "" {
@@ -19,9 +17,8 @@ func HealthCheck(log *slog.Logger) http.HandlerFunc {
 		// 	return
 		// }
 
-		//TODO: Получать из вызова, а не напрямую!
 		// 1. Подключение к базе
-		db, err := sql.Open("postgres", "postgres://postgres:qwerty@localhost:5434/postgres?sslmode=disable")
+		db, err := sql.Open("postgres", cfg.DSN)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
