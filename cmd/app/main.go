@@ -1,8 +1,8 @@
 package main
 
 import (
-	"app/internal/app"
 	"app/internal/config"
+	"app/internal/server"
 	"fmt"
 	"log"
 )
@@ -16,5 +16,6 @@ func main() {
 	}
 
 	// Run
+	app := server.NewApp()
 	app.Run(cfg)
 }

@@ -1,4 +1,4 @@
-package app
+package server
 
 import (
 	"app/internal/config"
@@ -36,6 +36,8 @@ const (
 
 // - 4️⃣ Запуск сервера: запустите HTTP-сервер, обычно с помощью http.ListenAndServe, и корректно обработайте возможные ошибки запуска.
 
+// В целом не до конца понимаю, что это дает (04.11.2025)
+// но давно хотел создать в конструкторе "главную" структуру приложения
 type App struct {
 	httpServer *http.Server
 	// UseCase!?
@@ -48,7 +50,7 @@ func NewApp() *App {
 }
 
 // Run creates objects (via constructors!)
-func Run(cfg *config.Config) {
+func (a *App) Run(cfg *config.Config) {
 	log := setupLogger(cfg.Env)
 	//log = log.With(slog.String("env", cfg.Env)) // к каждому сообщению будет добавляться поле с информацией о текущем окружении
 	log.Info("init server", slog.String("address", cfg.HTTPServer.Address)) // Помимо сообщения выведем параметр с адресом
@@ -74,8 +76,9 @@ func Run(cfg *config.Config) {
 
 	// HTTP Server🧹🏦
 	router := chi.NewRouter()
+	// middlewares & handlers
 	v1.RouterMiddleware(router, log)
-	httpServer := httpserver.New(cfg.HTTPServer.Address, router, log)
+	a.httpServer = httpserver.New(cfg.HTTPServer.Address, router, log)
 
 	// Waiting signal🧹🏦
 	done := make(chan os.Signal, 1)
@@ -89,7 +92,7 @@ func Run(cfg *config.Config) {
 	//defer cancel()
 
 	// Shutdown🧹🏦
-	if err := httpServer.Shutdown(ctx); err != nil {
+	if err := a.httpServer.Shutdown(ctx); err != nil {
 		log.Error("failed to stop server", sl.Err(err))
 		return
 	}
