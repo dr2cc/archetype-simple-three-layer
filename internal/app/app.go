@@ -36,7 +36,7 @@ const (
 // - 4️⃣ Запуск сервера: запустите HTTP-сервер, обычно с помощью http.ListenAndServe, и корректно обработайте возможные ошибки запуска.
 
 // Run creates objects via constructors.
-func Run(cfg *config.Config) { //nolint: gocyclo,cyclop,funlen,gocritic,nolintlint
+func Run(cfg *config.Config) {
 	log := setupLogger(cfg.Env)
 	//log = log.With(slog.String("env", cfg.Env)) // к каждому сообщению будет добавляться поле с информацией о текущем окружении
 	log.Info("init server", slog.String("address", cfg.HTTPServer.Address)) // Помимо сообщения выведем параметр с адресом
