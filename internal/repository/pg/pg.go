@@ -80,3 +80,22 @@ func New(log *slog.Logger, db *sql.DB) error {
 
 	return nil
 }
+
+func CreateRecord(log *slog.Logger, str string, db *sql.DB) error {
+	const op = "repository.pg.CreateRecord" // Имя текущей функции для логов и ошибок
+	log.Info(op)
+	log.Info(str)
+	stmt, err := db.Prepare("INSERT INTO aliases(str, str) VALUES($1, $2)")
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	_, err = stmt.Exec(str, str)
+
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	//
+
+	return nil
+}

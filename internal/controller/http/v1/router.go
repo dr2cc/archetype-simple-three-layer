@@ -2,7 +2,9 @@ package v1
 
 import (
 	"app/internal/config"
+	"app/internal/controller/http/v1/save"
 	"app/internal/controller/ping"
+	"app/internal/repository/pg"
 	myLog "app/internal/usecase/middleware/logger"
 	"log/slog"
 
@@ -10,7 +12,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
-func RouterMiddleware(router *chi.Mux, log *slog.Logger, cfg *config.Config) {
+func RouterMiddleware(router *chi.Mux, log *slog.Logger, cfg *config.Config, db *pg.Postgres) {
 	// Middleware встроенный в chi
 	router.Use(middleware.RequestID) // Трассировка. Добавляется request_id в каждый запрос
 	router.Use(middleware.Logger)    // Логирование всех запросов
@@ -23,5 +25,6 @@ func RouterMiddleware(router *chi.Mux, log *slog.Logger, cfg *config.Config) {
 
 	// handlers
 	router.Get("/healthDB", ping.HealthCheck(log, cfg))
+	router.Post("/", save.New(log, db.DB))
 
 }

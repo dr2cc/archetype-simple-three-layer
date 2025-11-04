@@ -52,7 +52,6 @@ func NewApp() *App {
 // Run creates objects (via constructors!)
 func (a *App) Run(cfg *config.Config) {
 	log := setupLogger(cfg.Env)
-	//log = log.With(slog.String("env", cfg.Env)) // к каждому сообщению будет добавляться поле с информацией о текущем окружении
 	log.Info("init server", slog.String("address", cfg.HTTPServer.Address)) // Помимо сообщения выведем параметр с адресом
 	log.Debug("logger debug mode enabled")
 
@@ -76,8 +75,9 @@ func (a *App) Run(cfg *config.Config) {
 
 	// HTTP Server🧹🏦
 	router := chi.NewRouter()
+
 	// middlewares & handlers
-	v1.RouterMiddleware(router, log, cfg)
+	v1.RouterMiddleware(router, log, cfg, db)
 	a.httpServer = httpserver.New(cfg.HTTPServer.Address, router, log)
 
 	// Waiting signal🧹🏦
