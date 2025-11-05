@@ -7,18 +7,19 @@ import (
 	"database/sql"
 	"fmt"
 	"log/slog"
+	"os"
 	"time"
 
 	// Без такой конструкции не возможно подключится к postgres
 	_ "github.com/lib/pq"
 )
 
-type Postgres struct {
+type PostgresRepo struct {
 	DB *sql.DB
 }
 
 // Инициализация подключения к PostgreSQL
-func InitDB(log *slog.Logger, cfg *config.Config) (*Postgres, error) {
+func NewPostgresRepo(log *slog.Logger, cfg *config.Config) (*PostgresRepo, error) {
 	// Getting DSN from environment variables
 	//dsn := os.Getenv("DATABASE_DSN")
 
@@ -53,13 +54,21 @@ func InitDB(log *slog.Logger, cfg *config.Config) (*Postgres, error) {
 		return nil, fmt.Errorf("error to ping db: %v", err)
 	}
 
-	return &Postgres{DB: db}, nil
+	repo := &PostgresRepo{DB: db}
+
+	err = checkTab(log, repo)
+	if err != nil {
+		log.Error("failed to init storage")
+		os.Exit(1)
+	}
+
+	return repo, nil
 }
 
-func New(log *slog.Logger, db *sql.DB) error {
+// Создаем таблицу, если ее еще нет
+func checkTab(log *slog.Logger, repo *PostgresRepo) error {
 
-	// 2. Создаем таблицу, если ее еще нет
-	stmt, err := db.Prepare(`
+	stmt, err := repo.DB.Prepare(`
 	CREATE TABLE IF NOT EXISTS aliases(
         alias VARCHAR NOT NULL UNIQUE,
         url TEXT NOT NULL);
@@ -81,16 +90,18 @@ func New(log *slog.Logger, db *sql.DB) error {
 	return nil
 }
 
-func CreateRecord(log *slog.Logger, str string, db *sql.DB) error {
+func CreateRecord(log *slog.Logger, url string, alias string, repo *PostgresRepo) error {
 	const op = "repository.pg.CreateRecord" // Имя текущей функции для логов и ошибок
 	log.Info(op)
-	log.Info(str)
-	stmt, err := db.Prepare("INSERT INTO aliases(str, str) VALUES($1, $2)")
+	log.Info(url)
+	log.Info(alias)
+
+	stmt, err := repo.DB.Prepare("INSERT INTO aliases(alias, url) VALUES($1, $2)")
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	_, err = stmt.Exec(str, str)
+	_, err = stmt.Exec(alias, url)
 
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)

@@ -10,9 +10,11 @@ import (
 )
 
 type Config struct {
-	Env        string `yaml:"env" env-default:"local"`
-	DSN        string `yaml:"dsn" env-required:"true"`
-	HTTPServer `yaml:"http_server"`
+	Env string `yaml:"env" env-default:"local"`
+	DSN string `yaml:"dsn" env-required:"true"`
+	// готовлюсь к миграциям
+	MigrationsPath string
+	HTTPServer     `yaml:"http_server"`
 }
 
 type HTTPServer struct {

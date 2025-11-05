@@ -40,9 +40,6 @@ const (
 // но давно хотел создать в конструкторе "главную" структуру приложения
 type App struct {
 	httpServer *http.Server
-	// UseCase!?
-	// Сущность по проверке на не пустое значение передаваемых
-	// для записи в db данных ?
 }
 
 func NewApp() *App {
@@ -56,28 +53,21 @@ func (a *App) Run(cfg *config.Config) {
 	log.Debug("logger debug mode enabled")
 
 	// Repository🧹🏦
-	db, err := pg.InitDB(log, cfg)
+	repo, err := pg.NewPostgresRepo(log, cfg)
 	if err != nil {
 		log.Error("failed to connect storage")
 		os.Exit(1)
 	}
 
-	// TODO: вынести? или оставить?
-	// создаем/проверяем наличие таблицы
-	errStorage := pg.New(log, db.DB)
-	if errStorage != nil {
-		log.Error("failed to init storage")
-		os.Exit(1)
-	}
-
 	// Use-Case🧹🏦
+	// В данный момент именно service я не создаю. Сложно..
+	// Видимо им можно считать вызов server.NewApp в main
 	// ...
 
 	// HTTP Server🧹🏦
 	router := chi.NewRouter()
-
 	// middlewares & handlers
-	v1.RouterMiddleware(router, log, cfg, db)
+	v1.RouterMiddleware(router, log, cfg, repo)
 	a.httpServer = httpserver.New(cfg.HTTPServer.Address, router, log)
 
 	// Waiting signal🧹🏦
