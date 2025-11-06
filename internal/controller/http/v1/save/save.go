@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func New(log *slog.Logger, repo *pg.PostgresRepo) http.HandlerFunc {
+func New(repo *pg.PostgresRepo, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {

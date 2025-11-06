@@ -66,10 +66,10 @@ func (a *App) Run(cfg *config.Config) {
 	// ...
 
 	// HTTP Server🧹🏦
-	router := chi.NewRouter()
+	mux := chi.NewRouter()
 	// middlewares & handlers
-	v1.RouterMiddleware(router, log, cfg, repo)
-	a.httpServer = httpserver.New(cfg.HTTPServer.Address, router, log)
+	v1.Router(mux, cfg, repo, log)
+	a.httpServer = httpserver.New(cfg.HTTPServer.Address, mux, log)
 
 	// Waiting signal🧹🏦
 	done := make(chan os.Signal, 1)

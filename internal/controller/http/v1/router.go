@@ -12,7 +12,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 )
 
-func RouterMiddleware(router *chi.Mux, log *slog.Logger, cfg *config.Config, repo *pg.PostgresRepo) {
+func Router(router *chi.Mux, cfg *config.Config, repo *pg.PostgresRepo, log *slog.Logger) {
 	// Middleware встроенный в chi
 	router.Use(middleware.RequestID) // Трассировка. Добавляется request_id в каждый запрос
 	router.Use(middleware.Logger)    // Логирование всех запросов
@@ -24,7 +24,7 @@ func RouterMiddleware(router *chi.Mux, log *slog.Logger, cfg *config.Config, rep
 	router.Use(middleware.URLFormat) // Парсер URLов поступающих запросов. Удалит суффикс из пути маршрутизации и продолжит маршрутизацию
 
 	// handlers
-	router.Get("/healthDB", ping.HealthCheck(log, cfg))
-	router.Post("/", save.New(log, repo))
+	router.Get("/healthDB", ping.HealthCheck(repo, log))
+	router.Post("/", save.New(repo, log))
 
 }

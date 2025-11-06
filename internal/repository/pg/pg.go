@@ -38,7 +38,7 @@ func NewPostgresRepo(log *slog.Logger, cfg *config.Config) (*PostgresRepo, error
 	}
 
 	// // Не забыть про defer!!
-	//defer db.Close()
+	// defer db.Close()
 
 	// Настройки пула соединений
 	db.SetMaxOpenConns(25)
