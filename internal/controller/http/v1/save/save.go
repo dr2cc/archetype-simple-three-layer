@@ -1,12 +1,13 @@
 package save
 
 import (
-	"app/internal/entity"
-	"app/internal/repository/pg"
-	"app/internal/usecase/random"
 	"io"
 	"log/slog"
 	"net/http"
+
+	"app/internal/entity"
+	"app/internal/repository/pg"
+	"app/internal/usecase/random"
 )
 
 func New(repo *pg.PostgresRepo, log *slog.Logger) http.HandlerFunc {
