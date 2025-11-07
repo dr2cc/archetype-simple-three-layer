@@ -6,13 +6,14 @@ import (
 	"app/internal/controller/ping"
 	"app/internal/repository/pg"
 	myLog "app/internal/usecase/middleware/logger"
+	"app/internal/usecase/random"
 	"log/slog"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 )
 
-func Router(router *chi.Mux, cfg *config.Config, repo *pg.PostgresRepo, log *slog.Logger) {
+func Router(router *chi.Mux, cfg *config.Config, repo *pg.PostgresRepo, randomKey random.RandomGenerator, log *slog.Logger) {
 	// Middleware встроенный в chi
 	router.Use(middleware.RequestID) // Трассировка. Добавляется request_id в каждый запрос
 	router.Use(middleware.Logger)    // Логирование всех запросов
@@ -25,6 +26,6 @@ func Router(router *chi.Mux, cfg *config.Config, repo *pg.PostgresRepo, log *slo
 
 	// handlers
 	router.Get("/healthDB", ping.HealthCheck(repo, log))
-	router.Post("/", save.New(repo, log))
+	router.Post("/", save.New(repo, randomKey, log))
 
 }

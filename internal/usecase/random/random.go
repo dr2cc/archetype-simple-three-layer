@@ -6,17 +6,19 @@ import (
 )
 
 // TODO: move to config if needed
-const aliasLength = 6
+const keyLength = 6
+
+type RandomGenerator struct{}
 
 // NewRandomString generates random string with given size.
-func NewRandomString() string {
+func (g *RandomGenerator) NewRandomString() string {
 	rnd := rand.New(rand.NewSource(time.Now().UnixNano()))
 
 	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
 		"abcdefghijklmnopqrstuvwxyz" +
 		"0123456789")
 
-	b := make([]rune, aliasLength)
+	b := make([]rune, keyLength)
 	for i := range b {
 		b[i] = chars[rnd.Intn(len(chars))]
 	}

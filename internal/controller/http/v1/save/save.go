@@ -10,7 +10,7 @@ import (
 	"app/internal/usecase/random"
 )
 
-func New(repo *pg.PostgresRepo, log *slog.Logger) http.HandlerFunc {
+func New(repo *pg.PostgresRepo, randomKey random.RandomGenerator, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -21,7 +21,7 @@ func New(repo *pg.PostgresRepo, log *slog.Logger) http.HandlerFunc {
 
 		shortUrl := entity.ShortURL{
 			OriginalURL: string(body),
-			ID:          random.NewRandomString(),
+			ID:          randomKey.NewRandomString(),
 		}
 
 		err = pg.CreateRecord(log, shortUrl, repo)

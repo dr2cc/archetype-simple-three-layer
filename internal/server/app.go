@@ -5,6 +5,7 @@ import (
 	v1 "app/internal/controller/http/v1"
 	"app/internal/repository/pg"
 	"app/internal/usecase/logger/sl"
+	"app/internal/usecase/random"
 	"app/pkg/httpserver"
 	"net/http"
 
@@ -62,13 +63,12 @@ func (a *App) Run(cfg *config.Config) {
 	// Use-Case🧹🏦
 	// В данный момент именно service я не создаю. Сложно..
 	// Видимо им можно считать вызов server.NewApp в main
-	// Как сделаю service, добавить сюда рандомайзер
-	// ...
+	randomKey := random.RandomGenerator{}
 
 	// HTTP Server🧹🏦
 	mux := chi.NewRouter()
 	// middlewares & handlers
-	v1.Router(mux, cfg, repo, log)
+	v1.Router(mux, cfg, repo, randomKey, log)
 	a.httpServer = httpserver.New(cfg.HTTPServer.Address, mux, log)
 
 	// Waiting signal🧹🏦
