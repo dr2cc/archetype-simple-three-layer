@@ -1,17 +1,23 @@
 package v1
 
 import (
+	"log/slog"
+	"net/http"
+
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+
 	"app/internal/config"
 	"app/internal/controller/http/v1/save"
 	"app/internal/controller/ping"
 	"app/internal/repository/pg"
 	myLog "app/internal/usecase/middleware/logger"
 	"app/internal/usecase/random"
-	"log/slog"
-
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
 )
+
+type Handler interface {
+	New(repo *pg.PostgresRepo, randomKey random.RandomGenerator, log *slog.Logger) http.HandlerFunc
+}
 
 func Router(router *chi.Mux, cfg *config.Config, repo *pg.PostgresRepo, randomKey random.RandomGenerator, log *slog.Logger) {
 	// Middleware встроенный в chi
