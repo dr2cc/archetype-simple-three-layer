@@ -1,25 +1,19 @@
 package v1
 
 import (
-	"log/slog"
-	"net/http"
-
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
-
 	"app/internal/config"
 	"app/internal/controller/http/v1/save"
 	"app/internal/controller/ping"
 	"app/internal/repository/pg"
 	myLog "app/internal/usecase/middleware/logger"
 	"app/internal/usecase/random"
+	"log/slog"
+
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 )
 
-type Handler interface {
-	New(repo *pg.PostgresRepo, randomKey random.RandomGenerator, log *slog.Logger) http.HandlerFunc
-}
-
-func Router(router *chi.Mux, cfg *config.Config, repo *pg.PostgresRepo, randomKey random.RandomGenerator, log *slog.Logger) {
+func Router(router *chi.Mux, cfg *config.Config, repoPg *pg.PostgresRepo, randomKey random.RandomGenerator, log *slog.Logger) {
 	// Middleware встроенный в chi
 	router.Use(middleware.RequestID) // Трассировка. Добавляется request_id в каждый запрос
 	router.Use(middleware.Logger)    // Логирование всех запросов
@@ -30,8 +24,13 @@ func Router(router *chi.Mux, cfg *config.Config, repo *pg.PostgresRepo, randomKe
 	router.Use(myLog.New(log))       // Меняю логгер на мой
 	router.Use(middleware.URLFormat) // Парсер URLов поступающих запросов. Удалит суффикс из пути маршрутизации и продолжит маршрутизацию
 
+	handlers := save.Handler{
+		Repo: repoPg,
+	}
+
 	// handlers
-	router.Get("/healthDB", ping.HealthCheck(repo, log))
-	router.Post("/", save.New(repo, randomKey, log))
+	router.Get("/healthDB", ping.HealthCheck(repoPg, log))
+	//router.Post("/", save.New(repo, randomKey, log))
+	router.Post("/", handlers.New(randomKey, log))
 
 }

@@ -1,20 +1,19 @@
 package save
 
 import (
-	"io"
-	"log/slog"
-	"net/http"
-
 	"app/internal/entity"
 	"app/internal/repository/pg"
 	"app/internal/usecase/random"
+	"io"
+	"log/slog"
+	"net/http"
 )
 
 type Handler struct {
-	repo *pg.PostgresRepo
+	Repo *pg.PostgresRepo
 }
 
-func New(repo *pg.PostgresRepo, randomKey random.RandomGenerator, log *slog.Logger) http.HandlerFunc {
+func (h Handler) New(randomKey random.RandomGenerator, log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		url, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -33,7 +32,7 @@ func New(repo *pg.PostgresRepo, randomKey random.RandomGenerator, log *slog.Logg
 			ID:          randomKey.NewRandomString(),
 		}
 
-		err = pg.CreateRecord(log, shortUrl, repo)
+		err = pg.CreateRecord(log, shortUrl, h.Repo)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, "failed to add record", http.StatusBadRequest)

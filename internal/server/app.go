@@ -7,10 +7,9 @@ import (
 	"app/internal/usecase/logger/sl"
 	"app/internal/usecase/random"
 	"app/pkg/httpserver"
-	"net/http"
-
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
