@@ -74,14 +74,12 @@ func (a *App) Run(cfg *config.Config) {
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
+	// Shutdown🧹🏦
 	<-done
 	log.Info("stopping server")
-
 	// Смысл таймаута был, но сейчас потерян..
 	ctx := context.Background() //context.WithTimeout(context.Background(), 10*time.Second)
 	//defer cancel()
-
-	// Shutdown🧹🏦
 	if err := a.httpServer.Shutdown(ctx); err != nil {
 		log.Error("failed to stop server", sl.Err(err))
 		return
