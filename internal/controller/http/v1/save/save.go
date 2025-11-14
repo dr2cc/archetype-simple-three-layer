@@ -1,9 +1,9 @@
 package save
 
 import (
-	"app/internal/entity"
 	"app/internal/repository/pg"
 	"app/internal/usecase/random"
+	url_shortening_service "app/internal/usecase/urlshorteningservice"
 	"io"
 	"log/slog"
 	"net/http"
@@ -27,12 +27,9 @@ func (h Handler) New(randomKey random.RandomGenerator, log *slog.Logger) http.Ha
 		}
 		defer r.Body.Close()
 
-		shortUrl := entity.ShortURL{
-			OriginalURL: string(url),
-			ID:          randomKey.NewRandomString(),
-		}
+		shortUrl := url_shortening_service.NewService(string(url), randomKey)
 
-		err = pg.CreateRecord(log, shortUrl, h.Repo)
+		err = pg.NewRecord(log, shortUrl, h.Repo)
 		if err != nil {
 			log.Error(err.Error())
 			http.Error(w, "failed to add record", http.StatusBadRequest)

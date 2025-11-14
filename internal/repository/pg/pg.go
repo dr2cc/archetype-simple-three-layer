@@ -94,7 +94,7 @@ func checkTab(log *slog.Logger, repo *PostgresRepo) error {
 	return nil
 }
 
-func CreateRecord(log *slog.Logger, shortUrl entity.ShortURL, repo *PostgresRepo) error {
+func NewRecord(log *slog.Logger, shortUrl entity.ShortURL, repo *PostgresRepo) error {
 	const op = "repository.pg.CreateRecord" // Имя текущей функции для логов и ошибок
 	url := shortUrl.OriginalURL
 	alias := shortUrl.ID
