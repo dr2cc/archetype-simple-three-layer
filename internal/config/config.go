@@ -14,14 +14,17 @@ type Config struct {
 	DSN string `yaml:"dsn" env-required:"true"`
 	// готовлюсь к миграциям
 	MigrationsPath string
-	HTTPServer     `yaml:"http_server"`
-	DBset          `yaml:"db_set"`
+	// Структуры HTTPServer и DBset встроены в Config без указания поля
+	// Это позволяет обращаться к из полям напрямую через () . после Config
+	HTTPServer `yaml:"http_server"`
+	DBset      `yaml:"db_set"`
 }
 
 type HTTPServer struct {
-	Address     string        `yaml:"address" env-default:"localhost:8080"`
-	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
-	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
+	Address         string        `yaml:"address" env-default:"localhost:8080"`
+	Timeout         time.Duration `yaml:"timeout" env-default:"4s"`
+	IdleTimeout     time.Duration `yaml:"idle_timeout" env-default:"60s"`
+	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" env-default:"10s"`
 	// User        string        `yaml:"user" env-required:"true"`
 	// Password    string        `yaml:"password" env-required:"true" env:"HTTP_SERVER_PASSWORD"`
 }

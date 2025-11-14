@@ -6,7 +6,6 @@ import (
 	"app/internal/repository/pg"
 	"app/internal/usecase/logger/sl"
 	"app/internal/usecase/random"
-	"app/pkg/httpserver"
 	"context"
 	"log/slog"
 	"net/http"
@@ -60,26 +59,59 @@ func (a *App) Run(cfg *config.Config) {
 	}
 
 	// Use-Case🧹🏦
-	// В данный момент именно service я не создаю. Сложно..
-	// Видимо им можно считать вызов server.NewApp в main
+	// В данный момент (14.11.25) именно service здесь я не создаю
 	randomKey := random.RandomGenerator{}
 
-	// HTTP Server🧹🏦
+	// Router
 	mux := chi.NewRouter()
 	// middlewares & handlers
 	v1.Router(mux, cfg, repo, randomKey, log)
-	a.httpServer = httpserver.New(cfg.HTTPServer.Address, mux, log)
 
-	// Waiting signal🧹🏦
+	// ❗Graceful shutdown
+	// done: Это наш "стоп-кран".
+	// Это буферизованный канал, который будет ожидать системные сигналы.
 	done := make(chan os.Signal, 1)
+	// signal.Notify: Регистрирует канал done для получения уведомлений,
+	// когда операционная система отправляет сигналы прерывания
+	// (Ctrl+C), SIGINT или SIGTERM
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	// Shutdown🧹🏦
+	// HTTP Server - конфигурация и запуск
+	a.httpServer = &http.Server{
+		Addr:         cfg.Address,
+		Handler:      mux,
+		ReadTimeout:  cfg.Timeout,
+		WriteTimeout: cfg.Timeout,
+		IdleTimeout:  cfg.IdleTimeout,
+	}
+
+	// Отдельная горутина: сервер запускается в своей собственной горутине.
+	// Это необходимо, так как ListenAndServe() является блокирующим вызовом.
+	go func() {
+		if err := a.httpServer.ListenAndServe(); err != nil {
+			log.Error("failed to start server")
+		}
+	}()
+
+	log.Info("server started")
+
+	// Ожидание сигнала остановки.
+	// <-done: Это критическая точка синхронизации. Основная горутина main блокируется здесь.
+	// Она будет ждать, пока в канал done не придет системный сигнал.
+	// Как только пользователь нажимает Ctrl+C, канал разблокируется, и выполнение продолжается.
 	<-done
 	log.Info("stopping server")
-	// Смысл таймаута был, но сейчас потерян..
-	ctx := context.Background() //context.WithTimeout(context.Background(), 10*time.Second)
-	//defer cancel()
+
+	// Корректное завершение с таймаутом (context.WithTimeout и Shutdown).
+	// context.WithTimeout: создает контекст, который автоматически отменится через 10 секунд.
+	// Это "страховка" от зависания сервера.
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+	// Всегда отменяю контекст, чтобы освободить его ресурсы
+	defer cancel()
+
+	// srv.Shutdown(ctx): вызывает изящное (graceful) завершение работы.
+	// Он перестает принимать новые запросы, но дает активным запросам время завершиться.
+	// Он использует канал <-ctx.Done() (который находится внутри ctx), чтобы узнать, когда истечет 10-секундный лимит.
 	if err := a.httpServer.Shutdown(ctx); err != nil {
 		log.Error("failed to stop server", sl.Err(err))
 		return
