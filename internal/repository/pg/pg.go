@@ -44,13 +44,12 @@ func NewPostgresRepo(log *slog.Logger, cfg *config.Config) (*PostgresRepo, error
 	// defer db.Close()
 
 	// Настройки пула соединений
-	// db.SetMaxOpenConns(25)
-	// db.SetMaxIdleConns(25)
-	// db.SetConnMaxLifetime(5 * time.Minute)
-
 	db.SetMaxOpenConns(cfg.SetMaxOpenConns)
 	db.SetMaxIdleConns(cfg.SetMaxIdleConns)
 	db.SetConnMaxLifetime(cfg.SetConnMaxLifetime)
+	// db.SetMaxOpenConns(25)
+	// db.SetMaxIdleConns(25)
+	// db.SetConnMaxLifetime(5 * time.Minute)
 
 	// Проверяю подключение с таймаутом ответа
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
