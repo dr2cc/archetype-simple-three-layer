@@ -15,6 +15,7 @@ type Config struct {
 	// готовлюсь к миграциям
 	MigrationsPath string
 	HTTPServer     `yaml:"http_server"`
+	DBset          `yaml:"db_set"`
 }
 
 type HTTPServer struct {
@@ -23,6 +24,13 @@ type HTTPServer struct {
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
 	// User        string        `yaml:"user" env-required:"true"`
 	// Password    string        `yaml:"password" env-required:"true" env:"HTTP_SERVER_PASSWORD"`
+}
+
+// Настройки пула соединений
+type DBset struct {
+	SetMaxOpenConns    int           `yaml:"set_max_open_conns"`
+	SetMaxIdleConns    int           `yaml:"set_max_idle_conns"`
+	SetConnMaxLifetime time.Duration `yaml:"set_conn_max_lifetime"`
 }
 
 func NewConfig() (*Config, error) {

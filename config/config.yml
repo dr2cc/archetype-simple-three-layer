@@ -4,3 +4,7 @@ http_server: # конфигурация нашего http-сервера
   address: "localhost:8080"
   timeout: 4s
   idle_timeout: 30s
+db_set: # Настройки пула соединений
+  set_max_open_conns: 25
+  set_max_idle_conns: 25
+  set_conn_max_lifetime: 5m
