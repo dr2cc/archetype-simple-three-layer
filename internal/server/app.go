@@ -106,7 +106,7 @@ func (a *App) Run(cfg *config.Config) {
 	// context.WithTimeout: создает контекст, который автоматически отменится через 10 секунд.
 	// Это "страховка" от зависания сервера.
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
-	// Всегда отменяю контекст, чтобы освободить его ресурсы
+	// Всегда отменяем контекст, чтобы освободить его ресурсы
 	defer cancel()
 
 	// srv.Shutdown(ctx): вызывает изящное (graceful) завершение работы.
